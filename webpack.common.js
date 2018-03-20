@@ -4,13 +4,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
 	entry: {
-		app: "./src/MultiPoints.js"
+		app: "./src/RotatedTrangle.js"
 	},
 
 	plugins: [
 		new CleanWebpackPlugin(['dist']),
 		new HtmlWebpackPlugin({
-			title: "click point demo01 (WebGL)"
+			title: "Demo for jzl (WebGL)"
 		})
 	],
 
