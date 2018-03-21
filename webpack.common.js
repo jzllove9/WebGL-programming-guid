@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
 	entry: {
-		app: "./src/RotatedTrangle_matrix.js"
+		app: "./src/RotatedTrangle_matrix4.js"
 	},
 
 	plugins: [
