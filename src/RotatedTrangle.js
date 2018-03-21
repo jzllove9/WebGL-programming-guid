@@ -62,7 +62,7 @@ window.onload = function() {
 	}
 
 	/*平移*/
-	rotate(gl, 90);
+	rotate(gl, -45);
 	/*设置颜色*/
 	setColor(gl);
 
