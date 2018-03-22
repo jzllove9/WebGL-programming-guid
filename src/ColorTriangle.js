@@ -12,19 +12,21 @@ import {
 function initShaderString() {
 	let VSHADER_ARR = [
 		"attribute vec4 a_Position;",
+		"attribute vec4 v_color;",
 		"uniform mat4 u_xfromMatrix;",
+		"varying vec4 a_color;",
 		"void main(){",
 		"	gl_Position = u_xfromMatrix * a_Position;",
-		"	gl_PointSize = 10.0;",
+		"	a_color = v_color;",
 		"}"
 	];
 	let VSHADER_STR = VSHADER_ARR.join("\n");
 
 	let FSHADER_ARR = [
 		"precision mediump float;",
-		"uniform vec4 u_FragColor;",
+		"varying vec4 a_color;",
 		"void main(){",
-		"	gl_FragColor = u_FragColor;",
+		"	gl_FragColor = a_color;",
 		"}"
 	]
 
@@ -91,14 +93,16 @@ window.onload = function() {
 /*初始化顶点缓存*/
 function initVertexBuffers(gl) {
 	let vertices = new Float32Array([
-		0.0, 0.5, 
-		-0.5, -0.5,
-		0.5, -0.5
+		0.0, 0.5, 1.0,0.0,0.0,
+		-0.5, -0.5,0.0,1.0,0.0,
+		0.5, -0.5,0.0,0.0,1.0
 
 		/*-0.5, 0.5, -0.5, -0.5,
 		0.5, 0.5, 0.5, -0.5*/
 	]);
 	let n = 3;
+
+	let FSIZE = vertices.BYTES_PER_ELEMENT;
 
 	let vertexBuffer = gl.createBuffer();
 	if (!vertexBuffer) {
@@ -110,10 +114,13 @@ function initVertexBuffers(gl) {
 	gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
 	let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
-	let u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
+	let v_color = gl.getAttribLocation(gl.program, 'v_color');
 
-	gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, FSIZE * 5, 0);
 	gl.enableVertexAttribArray(a_Position);
+
+	gl.vertexAttribPointer(v_color, 3, gl.FLOAT, false, FSIZE * 5, FSIZE * 2);
+	gl.enableVertexAttribArray(v_color);
 
 	return n;
 }
