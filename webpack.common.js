@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
 	entry: {
-		app: "./src/ColorTriangle.js"
+		app: "./src/TriangleFragCoord.js"
 	},
 
 	plugins: [
