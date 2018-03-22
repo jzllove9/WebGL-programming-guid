@@ -13,6 +13,7 @@
   "license": "ISC",
   "devDependencies": {
     "clean-webpack-plugin": "^0.1.19",
+    "file-loader": "^1.1.11",
     "html-webpack-plugin": "^3.0.6",
     "uglifyjs-webpack-plugin": "^1.2.4",
     "webpack": "^4.1.1",

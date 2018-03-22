@@ -7,24 +7,29 @@ import {
 	Vector3,
 	Vector4
 } from './lib/cuon-matrix.js';
+import SkyPic from "./resource/sky.jpg";
 
 /*初始化shader字符串*/
 function initShaderString() {
 	let VSHADER_ARR = [
 		"attribute vec4 a_Position;",
 		"uniform mat4 u_xfromMatrix;",
+		"attribute vec2 a_TexCoord;",
+		"varying vec2 v_TexCoord;",
 		"void main(){",
 		"	gl_Position = u_xfromMatrix * a_Position;",
 		"	gl_PointSize = 10.0;",
+		"	v_TexCoord = a_TexCoord;",
 		"}"
 	];
 	let VSHADER_STR = VSHADER_ARR.join("\n");
 
 	let FSHADER_ARR = [
 		"precision mediump float;",
-		"uniform vec4 u_FragColor;",
+		"uniform sampler2D u_Sampler;",
+		"varying vec2 v_TexCoord;",
 		"void main(){",
-		"	gl_FragColor = u_FragColor;",
+		"	gl_FragColor = texture2D(u_Sampler, v_TexCoord);",
 		"}"
 	]
 
@@ -65,8 +70,13 @@ window.onload = function() {
 		return;
 	}
 
+	if(!initTextures(gl, n)){
+		console.log("Failed to initalize textures");
+		return;
+	}
+
 	/*设置颜色*/
-	setColor(gl);
+	setTexture(gl);
 
 	let currentAngle = 0;
 	let xfromMatrix = new Matrix4();
@@ -85,20 +95,23 @@ window.onload = function() {
 	/*gl.clear(gl.COLOR_BUFFER_BIT);
 	gl.drawArrays(gl.TRIANGLES, 0, n);*/
 
-	tick();
+	
 }
 
 /*初始化顶点缓存*/
 function initVertexBuffers(gl) {
 	let vertices = new Float32Array([
-		0.0, 0.5, 
+		/*0.0, 0.5, 
 		-0.5, -0.5,
-		0.5, -0.5
+		0.5, -0.5*/
 
-		/*-0.5, 0.5, -0.5, -0.5,
-		0.5, 0.5, 0.5, -0.5*/
+		-0.5, 0.5, 0.0, 1.0,
+		-0.5, -0.5, 0.0, 0.0,
+		0.5, 0.5, 1.0, 1.0,
+		0.5, -0.5, 1.0, 0.0,
 	]);
-	let n = 3;
+	let n = 4;
+	let FSIZE = vertices.BYTES_PER_ELEMENT;
 
 	let vertexBuffer = gl.createBuffer();
 	if (!vertexBuffer) {
@@ -110,10 +123,12 @@ function initVertexBuffers(gl) {
 	gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
 
 	let a_Position = gl.getAttribLocation(gl.program, 'a_Position');
-	let u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
-
-	gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
+	gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, FSIZE * 4, 0);
 	gl.enableVertexAttribArray(a_Position);
+
+	let a_TexCoord = gl.getAttribLocation(gl.program, 'a_TexCoord');
+	gl.vertexAttribPointer(a_TexCoord, 2, gl.FLOAT, false, FSIZE * 4, FSIZE * 2);
+	gl.enableVertexAttribArray(a_TexCoord);
 
 	return n;
 }
@@ -123,14 +138,39 @@ function rotate_matrix() {
 	globalObj.modelMatrix.translate(0.35, 0, 0);
 	globalObj.modelMatrix.setRotate(globalObj.angle, 0, 0, 1);
 	
-
 	globalObj.gl.uniformMatrix4fv(globalObj.u_ModelMatrix, false, globalObj.modelMatrix.elements);
 }
 
-/*设置片元着色器颜色*/
-function setColor(gl) {
-	let u_FragColor = gl.getUniformLocation(gl.program, 'u_FragColor');
-	gl.uniform4f(u_FragColor, 1.0, 0.0, 0.0, 1.0);
+/*设置片元着色器贴图*/
+function setTexture(gl) {
+	let u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler');
+	
+}
+
+/*加载贴图*/
+function initTextures(gl, n){
+	let texture = gl.createTexture();
+	let u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler');
+	let image = new Image();
+	image.onload = function(){
+		loadTexture(gl, n, texture, u_Sampler, image);	
+	}
+	image.src = SkyPic;
+	return true;
+}
+
+/**/
+function loadTexture(gl, n, texture, u_Sampler, image){
+	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
+
+	gl.uniform1i(u_Sampler, 0);
+
+	tick();
 }
 
 /*绘制&重绘*/
@@ -138,7 +178,7 @@ function draw() {
 	rotate_matrix();
 
 	globalObj.gl.clear(globalObj.gl.COLOR_BUFFER_BIT);
-	globalObj.gl.drawArrays(globalObj.gl.TRIANGLES, 0, globalObj.n);
+	globalObj.gl.drawArrays(globalObj.gl.TRIANGLE_STRIP, 0, globalObj.n);
 }
 
 /*重绘调用*/
