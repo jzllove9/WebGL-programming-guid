@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
 	entry: {
-		app: "./src/TriangleFragCoord.js"
+		app: "./src/RotateRectWithTexture.js"
 	},
 
 	plugins: [
@@ -17,5 +17,16 @@ module.exports = {
 	output: {
 		filename: '[name].bundle.js',
 		path: path.resolve(__dirname, 'dist')
+	},
+
+	module:{
+		rules:[
+			{
+				test: /\.(png|svg|jpg|gif)$/,
+				use:[
+					'file-loader'
+				]
+			}
+		]
 	}
 };
