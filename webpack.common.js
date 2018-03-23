@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
 	entry: {
-		app: "./src/RotateRectWithoutTexture.js"
+		app: "./src/MultiTextures.js"
 	},
 
 	plugins: [

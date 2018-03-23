@@ -21,16 +21,20 @@ function initShaderString() {
 		"	gl_PointSize = 10.0;",
 		"	v_TexCoord.x = (a_TexCoord.x - 0.5) * u_CosSin.x - (a_TexCoord.y - 0.5) * u_CosSin.y + 0.5;",
 		"	v_TexCoord.y = (a_TexCoord.x - 0.5) * u_CosSin.y + (a_TexCoord.y - 0.5) * u_CosSin.x + 0.5;",
+		/*"	v_TexCoord = a_TexCoord;",*/
 		"}"
 	];
 	let VSHADER_STR = VSHADER_ARR.join("\n");
 
 	let FSHADER_ARR = [
 		"precision mediump float;",
-		"uniform sampler2D u_Sampler;",
+		"uniform sampler2D u_Sampler0;",
+		"uniform sampler2D u_Sampler1;",
 		"varying vec2 v_TexCoord;",
 		"void main(){",
-		"	gl_FragColor = texture2D(u_Sampler, v_TexCoord);",
+		"	vec4 color0 = texture2D(u_Sampler0, v_TexCoord);",
+		"	vec4 color1 = texture2D(u_Sampler1, v_TexCoord);",
+		"	gl_FragColor = color0 * color1;",
 		"}"
 	]
 
@@ -71,13 +75,10 @@ window.onload = function() {
 		return;
 	}
 
-	if(!initTextures(gl, n)){
+	if (!initTextures(gl, n)) {
 		console.log("Failed to initalize textures");
 		return;
 	}
-
-	/*设置颜色*/
-	setTexture(gl);
 
 	let currentAngle = 0;
 	let xfromMatrix = new Matrix4();
@@ -98,7 +99,7 @@ window.onload = function() {
 	/*gl.clear(gl.COLOR_BUFFER_BIT);
 	gl.drawArrays(gl.TRIANGLES, 0, n);*/
 
-	
+
 }
 
 /*初始化顶点缓存*/
@@ -108,8 +109,7 @@ function initVertexBuffers(gl) {
 		-0.5, -0.5,
 		0.5, -0.5*/
 
-		-0.5, 0.5, 0.0, 1.0,
-		-0.5, -0.5, 0.0, 0.0,
+		-0.5, 0.5, 0.0, 1.0, -0.5, -0.5, 0.0, 0.0,
 		0.5, 0.5, 1.0, 1.0,
 		0.5, -0.5, 1.0, 0.0,
 	]);
@@ -140,7 +140,7 @@ function initVertexBuffers(gl) {
 function rotate_matrix() {
 	globalObj.modelMatrix.translate(0.35, 0, 0);
 	globalObj.modelMatrix.setRotate(globalObj.angle, 0, 0, 1);
-	
+
 	globalObj.gl.uniformMatrix4fv(globalObj.u_ModelMatrix, false, globalObj.modelMatrix.elements);
 
 	let _angle = globalObj.angle;
@@ -151,39 +151,60 @@ function rotate_matrix() {
 	globalObj.gl.uniform2f(globalObj.u_CosSin, _cos, _sin);
 }
 
-/*设置片元着色器贴图*/
-function setTexture(gl) {
-	let u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler');
-	
-}
-
 /*加载贴图*/
-function initTextures(gl, n){
-	let texture = gl.createTexture();
-	let u_Sampler = gl.getUniformLocation(gl.program, 'u_Sampler');
-	let image = new Image();
-	image.onload = function(){
-		loadTexture(gl, n, texture, u_Sampler, image);	
+let g_texUint0 = false;
+let g_texUint1 = false;
+
+function initTextures(gl, n) {
+	let texture0 = gl.createTexture();
+	let u_Sampler0 = gl.getUniformLocation(gl.program, 'u_Sampler0');
+	let image0 = new Image();
+	image0.onload = function() {
+		loadTexture(gl, n, texture0, u_Sampler0, image0, 0);
 	}
-	image.src = require('./resource/sky.jpg');
+	image0.src = require('./resource/sky.jpg');
+
+	let texture1 = gl.createTexture();
+	let u_Sampler1 = gl.getUniformLocation(gl.program, 'u_Sampler1');
+	let image1 = new Image();
+	image1.onload = function() {
+		loadTexture(gl, n, texture1, u_Sampler1, image1, 1);
+	}
+	image1.src = require('./resource/skeleton.png');
+
+
 	return true;
 }
 
 /**/
-function loadTexture(gl, n, texture, u_Sampler, image){
+function loadTexture(gl, n, texture, u_Sampler, image, texUint) {
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
-	gl.activeTexture(gl.TEXTURE0);
+
+	if (texUint == 0) {
+		gl.activeTexture(gl.TEXTURE0);
+		g_texUint0 = true;
+	} else {
+		gl.activeTexture(gl.TEXTURE1);
+		g_texUint1 = true;
+	}
+
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+
+	/*
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	
+	*/
+
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, image);
 
-	gl.uniform1i(u_Sampler, 0);
+	gl.uniform1i(u_Sampler, texUint);
 
-	tick();
+	if (g_texUint0 && g_texUint1) {
+		tick();
+	}
+
 }
 
 /*绘制&重绘*/
@@ -204,6 +225,7 @@ function tick() {
 /*角度变化*/
 const ANGLE_STEP = 45;
 let g_last = Date.now();
+
 function animate(angle) {
 	let now = Date.now();
 	let elapsed = now - g_last;
