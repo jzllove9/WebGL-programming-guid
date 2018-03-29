@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
 	entry: {
-		app: "./src/MultiTextures.js"
+		app: "./src/ColoredCube.js"
 	},
 
 	plugins: [
