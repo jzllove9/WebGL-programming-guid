@@ -303,11 +303,11 @@ function draw() {
 	//globalObj.gl.drawArrays(globalObj.gl.TRIANGLES, 0, globalObj.n);
 	globalObj.gl.drawElements(globalObj.gl.TRIANGLES, globalObj.n, globalObj.gl.UNSIGNED_BYTE, 0);
 
-	/*
+	
 	model_view_matrix(true);
 	globalObj.gl.polygonOffset(1.0, 1.0);
 	globalObj.gl.drawElements(globalObj.gl.TRIANGLES, globalObj.n, globalObj.gl.UNSIGNED_BYTE, 0);
-	*/
+	
 }
 
 /*重绘调用*/
