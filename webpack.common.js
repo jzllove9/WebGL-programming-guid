@@ -4,7 +4,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
 	entry: {
-		app: "./src/LightedCube.js"
+		app: "./src/PointLightCube_f.js"
 	},
 
 	plugins: [
