@@ -4,13 +4,13 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
 	entry: {
-		app: "./src/PointLightCube_f.js"
+		app: "./src/shadow.js"
 	},
 
 	plugins: [
 		new CleanWebpackPlugin(['dist']),
 		new HtmlWebpackPlugin({
-			title: "Demo for jzl (WebGL)"
+			title: "Demo for WebGL (jzl)"
 		})
 	],
 
